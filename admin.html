@@ -63,7 +63,40 @@
         
         .error-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #ff3333; color: white; padding: 20px 40px; border-radius: 16px; font-size: 24px; font-weight: 800; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000; text-align: center; }
         .error-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    </style>
+    
+        /* --- Admin Desktop Responsiveness --- */
+        @media (min-width: 768px) {
+            .admin-top-bar { padding: 15px 40px; }
+            .admin-top-bar span { font-size: 18px; }
+            
+            /* Make the Hero section wider */
+            .hero-section { padding: 50px 20px; min-height: 40vh; }
+            .hero-img { width: 300px; height: 300px; }
+            .hero-title { font-size: 32px; letter-spacing: 6px; }
+            
+            /* Make the main container wider */
+            .container { max-width: 1000px; padding: 20px; }
+            
+            /* Turn the product list into a 2-column grid */
+            #productList {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+            }
+            
+            /* Make the Modals (Edit/Create) look better on desktop */
+            .modal-content { max-width: 500px; padding: 40px; }
+            
+            /* Move the + button so it doesn't block content */
+            .fab-btn { width: 80px; height: 80px; font-size: 50px; bottom: 40px; right: 40px; }
+        }
+
+        @media (min-width: 1024px) {
+            /* Turn the product list into a 3-column grid on large screens */
+            #productList { grid-template-columns: repeat(3, 1fr); }
+        }
+
+</style>
 </head>
 <body>
 
