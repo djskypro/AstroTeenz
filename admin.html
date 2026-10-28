@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroTeenz | Visual Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color: #0b0b0f; --panel-bg: #14141c; --border-color: #232333; --text-main: #ffffff; --text-muted: #8b8b9e; --primary-gradient: linear-gradient(90deg, #ff007f, #ff8c00); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 120px; overflow-x: hidden; }
+        
+        .admin-top-bar { background: var(--primary-gradient); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .admin-top-bar span { font-weight: 800; font-size: 14px; letter-spacing: 1px; }
+        .logout-btn { background: #000; color: white; border: none; padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; }
+
+        .editable { position: relative; }
+        .edit-btn { position: absolute; top: 10px; right: 10px; background: #ff007f; color: white; border: 2px solid white; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 5px; }
+        .edit-btn:hover { background: #ff8c00; transform: scale(1.05); }
+        
+        /* The Delete Button */
+        .delete-btn { position: absolute; top: 10px; left: 10px; background: #ff3333; color: white; border: 2px solid white; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 5px; }
+        .delete-btn:hover { background: #cc0000; transform: scale(1.05); }
+
+        .hero-section { text-align: center; padding: 30px 10px; position: relative; min-height: 35vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .hero-img { width: 200px; height: 200px; border-radius: 30px; object-fit: contain; box-shadow: 0 10px 30px rgba(255, 0, 127, 0.2); background: #1a1a24;}
+        .hero-title { margin-top: 15px; font-size: 22px; letter-spacing: 4px; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .marquee-container { background: var(--primary-gradient); color: white; padding: 8px 0; font-size: 12px; font-weight: 800; letter-spacing: 2px; white-space: nowrap; overflow: hidden; position: relative; }
+        .marquee { display: inline-block; animation: scroll 15s linear infinite; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        .container { max-width: 400px; margin: 0 auto; padding: 15px; }
+        .product-card { background-color: var(--panel-bg); border-radius: 16px; overflow: hidden; margin-bottom: 20px; border: 1px solid var(--border-color); position: relative; }
+        .image-container { width: 100%; height: 280px; position: relative; background: #1a1a24; }
+        .image-container img { width: 100%; height: 100%; object-fit: cover; }
+        .card-content { padding: 15px; }
+        .card-content h2 { font-size: 18px; margin-bottom: 5px; }
+        .card-content p { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; }
+        .price { font-size: 22px; font-weight: 800; color: #ff007f; }
+
+        .fab-btn { position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px; border-radius: 50%; background: var(--primary-gradient); color: white; font-size: 40px; font-weight: 300; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(255, 0, 127, 0.5); cursor: pointer; z-index: 1500; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+        .fab-btn:hover { transform: scale(1.1) rotate(90deg); }
+
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-box { width: 90%; max-width: 400px; background: var(--panel-bg); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; }
+        input[type="email"], input[type="password"], input[type="text"], input[type="number"], textarea { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: #1f1f28; color: white; font-family: inherit; box-sizing: border-box; }
+        textarea { resize: vertical; }
+        .login-btn { width: 100%; padding: 12px; border-radius: 50px; border: none; background: var(--primary-gradient); color: white; font-weight: bold; cursor: pointer; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--panel-bg); padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
+        
+        .drop-zone { border: 2px dashed #ff007f; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 15px; background: #1a1a24; transition: 0.3s; }
+        .drop-zone.dragover { background: rgba(255, 0, 127, 0.1); border-color: #ff8c00; }
+        .preview-img { width: 100%; max-height: 150px; object-fit: contain; border-radius: 8px; margin-bottom: 15px; display: none; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .save-btn { background: var(--primary-gradient); color: white; opacity: 0.5; pointer-events: none; transition: 0.3s; }
+        .save-btn.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 15px #ff007f; }
+        .cancel-btn { background: #333; color: white; }
+        
+        .error-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #ff3333; color: white; padding: 20px 40px; border-radius: 16px; font-size: 24px; font-weight: 800; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000; text-align: center; }
+        .error-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    </style>
+</head>
+<body>
+
+    <div id="errorPopup" class="error-popup">Nahhhh brooo!</div>
+
+    <div class="login-container" id="loginPanel">
+        <div class="login-box">
+            <h2 style="margin-bottom: 20px;">AstroTeenz <span style="color:#ff007f;">Admin</span></h2>
+            <input type="email" id="email" placeholder="Admin Email">
+            <input type="password" id="password" placeholder="Password">
+            <button class="login-btn" onclick="login()" id="loginBtn">LOGIN</button>
+        </div>
+    </div>
+
+    <div id="adminPanel" style="display: none;">
+        <div class="admin-top-bar">
+            <span>👀 VISUAL EDITOR MODE</span>
+            <button class="logout-btn" onclick="logout()">LOGOUT</button>
+        </div>
+
+        <section class="hero-section editable">
+            <button class="edit-btn" onclick="editContent('hero_image')">✏️ Edit Image</button>
+            <img src="" id="site-hero-img" class="hero-img">
+            <div class="editable" style="display: inline-block; margin-top: 15px;">
+                <button class="edit-btn" onclick="editContent('hero_title')">✏️ Edit Text</button>
+                <h1 class="hero-title" id="site-hero-title">Loading...</h1>
+            </div>
+        </section>
+
+        <div class="marquee-container editable">
+            <button class="edit-btn" style="top: 5px;" onclick="editContent('marquee_text')">✏️ Edit</button>
+            <div class="marquee" id="site-marquee">Loading...</div>
+        </div>
+
+        <main class="container">
+            <h2 style="text-align: center; margin: 20px 0; font-size: 16px; color: #8b8b9e;">Store Products</h2>
+            <div id="productList"></div>
+        </main>
+
+        <button class="fab-btn" onclick="openAddModal()">+</button>
+    </div>
+
+    <!-- EDIT EXISTING MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 20px;">Edit</h3>
+            <input type="hidden" id="edit-key">
+            <input type="hidden" id="edit-field">
+            
+            <div id="textInputMode">
+                <input type="text" id="edit-value" placeholder="Enter new value...">
+            </div>
+
+            <div id="imageUploadMode" style="display: none;">
+                <img id="preview-img" class="preview-img" src="">
+                <div class="drop-zone" id="dropZone">
+                    <span style="font-size: 30px;">📸</span>
+                    <p>Tap to open Gallery<br>or Drag & Drop Image</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+                <button class="save-btn" id="saveBtn" onclick="saveContent()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE NEW PRODUCT MODAL -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px;">Add New Product</h3>
+            
+            <input type="text" id="new-title" placeholder="Product Name (e.g., AstroTeenz Cap)">
+            <input type="number" id="new-price" placeholder="Price (e.g., 20)">
+            <textarea id="new-desc" placeholder="Description" rows="3"></textarea>
+            
+            <img id="new-preview-img" class="preview-img" src="">
+            <div class="drop-zone" id="newDropZone">
+                <span style="font-size: 30px;">📸</span>
+                <p>Tap to open Gallery<br>or Drag & Drop Image</p>
+                <input type="file" id="newFileInput" accept="image/*" style="display: none;">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                <button class="save-btn" id="newSaveBtn" onclick="createProduct()" style="opacity: 1; pointer-events: auto;">Create Product</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://ylexketpyfrlnybhuovl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZXhrZXRweWZybG55Ymh1b3ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjczMjgsImV4cCI6MjEwODc0MzMyOH0.3eYgWOR8SZOTdGxKftBhmBPtr4jG_4xn-qyIS-F2A6g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let selectedFile = null;
+        let newSelectedFile = null;
+        let currentEditType = null; 
+
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadSiteContent();
+                loadProducts();
+            } else {
+                document.getElementById('loginPanel').style.display = 'flex';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
+        }
+        checkAuth();
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            document.getElementById('loginBtn').innerText = '...';
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                showError("Nahhhh brooo! Wrong password.");
+                document.getElementById('loginBtn').innerText = 'LOGIN';
+            } else { checkAuth(); }
+        }
+
+        async function logout() { await supabaseClient.auth.signOut(); checkAuth(); }
+
+        function showError(msg) {
+            const p = document.getElementById('errorPopup'); p.innerText = msg; p.classList.add('show');
+            setTimeout(() => p.classList.remove('show'), 2000);
+        }
+
+        async function loadSiteContent() {
+            const { data } = await supabaseClient.from('site_content').select('*');
+            if (!data) return;
+            data.forEach(item => {
+                if (item.content_key === 'hero_image') document.getElementById('site-hero-img').src = item.content_value;
+                if (item.content_key === 'hero_title') document.getElementById('site-hero-title').innerText = item.content_value;
+                if (item.content_key === 'marquee_text') document.getElementById('site-marquee').innerText = item.content_value; 
+            });
+        }
+
+        async function loadProducts() {
+            const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+            const list = document.getElementById('productList');
+            if (!data || data.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#8b8b9e;">No products yet. Click the + button!</p>';
+                return;
+            }
+            
+            // Added the Delete Button here
+            list.innerHTML = data.map(p => `
+                <div class="product-card">
+                    <div class="image-container editable">
+                        <button class="delete-btn" onclick="deleteProduct(${p.id}, '${p.image_url || ''}')">🗑️ Delete</button>
+                        <button class="edit-btn" onclick="editProduct(${p.id}, 'name', '${p.name}')">✏️ Title</button>
+                        <button class="edit-btn" style="top: 45px;" onclick="editProduct(${p.id}, 'image_url', '')">✏️ Image</button>
+                        <img src="${p.image_url || 'https://via.placeholder.com/300'}">
+                    </div>
+                    <div class="card-content">
+                        <div class="editable">
+                            <button class="edit-btn" style="top: 0; right: 0; padding: 4px 8px;" onclick="editProduct(${p.id}, 'description', '${(p.description || '').replace(/'/g, "\\'")}')">✏️ Desc</button>
+                            <h2 style="padding-right: 50px;">${p.name}</h2>
+                        </div>
+                        <p>${p.description || 'No description'}</p>
+                        <div class="editable" style="display: inline-block;">
+                            <button class="edit-btn" style="top: -25px; right: 0; padding: 4px 8px;" onclick="editProduct(${p.id}, 'price', ${p.price})">✏️ Price</button>
+                            <div class="price">$${p.price}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- DELETE PRODUCT ---
+        async function deleteProduct(id, imageUrl) {
+            if (!confirm("Are you sure you want to delete this product? This cannot be undone.")) return;
+
+            // 1. Delete from Database
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            
+            if (error) {
+                showError("Failed to delete: " + error.message);
+                return;
+            }
+
+            // 2. Delete the image from Storage (to save space)
+            if (imageUrl && imageUrl.includes('/images/')) {
+                const fileName = imageUrl.split('/images/')[1];
+                await supabaseClient.storage.from('images').remove([fileName]);
+            }
+
+            // 3. Refresh the list
+            loadProducts();
+            
+            // 4. Show success popup
+            const p = document.getElementById('errorPopup'); 
+            p.style.background = '#25D366'; 
+            p.innerText = "Deleted!";
+            p.classList.add('show'); 
+            setTimeout(() => { p.classList.remove('show'); p.style.background = '#ff3333'; }, 1500);
+        }
+
+        // --- EDIT EXISTING ---
+        function editContent(key) {
+            currentEditType = 'content';
+            document.getElementById('edit-key').value = key;
+            document.getElementById('edit-field').value = '';
+            document.getElementById('modalTitle').innerText = `Edit ${key.replace('_', ' ')}`;
+            
+            if (key.includes('image')) {
+                setupImageMode(key === 'hero_image' ? document.getElementById('site-hero-img').src : '');
+            } else {
+                setupTextMode(key === 'hero_title' ? document.getElementById('site-hero-title').innerText : document.getElementById('site-marquee').innerText);
+            }
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function editProduct(id, field, currentValue) {
+            currentEditType = 'product';
+            document.getElementById('edit-key').value = id;
+            document.getElementById('edit-field').value = field;
+            document.getElementById('modalTitle').innerText = `Edit Product ${field}`;
+            
+            if (field === 'image_url') {
+                setupImageMode('');
+            } else {
+                setupTextMode(currentValue);
+            }
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function setupTextMode(value) {
+            document.getElementById('textInputMode').style.display = 'block';
+            document.getElementById('imageUploadMode').style.display = 'none';
+            document.getElementById('edit-value').value = value;
+            document.getElementById('saveBtn').classList.add('active'); 
+        }
+
+        function setupImageMode(currentUrl) {
+            document.getElementById('textInputMode').style.display = 'none';
+            document.getElementById('imageUploadMode').style.display = 'block';
+            document.getElementById('saveBtn').classList.remove('active'); 
+            
+            const preview = document.getElementById('preview-img');
+            if (currentUrl) {
+                preview.src = currentUrl;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+        }
+
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+        // --- CREATE NEW PRODUCT ---
+        function openAddModal() {
+            document.getElementById('new-title').value = '';
+            document.getElementById('new-price').value = '';
+            document.getElementById('new-desc').value = '';
+            document.getElementById('new-preview-img').style.display = 'none';
+            document.getElementById('newFileInput').value = '';
+            newSelectedFile = null;
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+        // --- UPLOAD LOGIC ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewImg = document.getElementById('preview-img');
+        const saveBtn = document.getElementById('saveBtn');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) return showError("Please select an image!");
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                saveBtn.classList.add('active'); 
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const newDropZone = document.getElementById('newDropZone');
+        const newFileInput = document.getElementById('newFileInput');
+        const newPreviewImg = document.getElementById('new-preview-img');
+
+        newDropZone.addEventListener('click', () => newFileInput.click());
+        newDropZone.addEventListener('dragover', (e) => { e.preventDefault(); newDropZone.classList.add('dragover'); });
+        newDropZone.addEventListener('dragleave', () => newDropZone.classList.remove('dragover'));
+        newDropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); newDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleNewFile(e.dataTransfer.files[0]);
+        });
+        newFileInput.addEventListener('change', (e) => { if (e.target.files.length) handleNewFile(e.target.files[0]); });
+
+        function handleNewFile(file) {
+            if (!file.type.startsWith('image/')) return showError("Please select an image!");
+            newSelectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newPreviewImg.src = e.target.result;
+                newPreviewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- SAVE EDITS ---
+        async function saveContent() {
+            const key = document.getElementById('edit-key').value;
+            const field = document.getElementById('edit-field').value;
+            const textValue = document.getElementById('edit-value').value;
+            
+            saveBtn.innerText = 'Uploading...';
+            saveBtn.classList.remove('active');
+
+            let finalUrl = textValue;
+
+            if (selectedFile) {
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`; 
+                
+                const { data, error } = await supabaseClient.storage.from('images').upload(fileName, selectedFile);
+                if (error) {
+                    showError("Upload failed: " + error.message);
+                    saveBtn.innerText = 'Submit'; saveBtn.classList.add('active'); return;
+                }
+                const { data: urlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
+                finalUrl = urlData.publicUrl;
+            }
+
+            if (currentEditType === 'content') {
+                await supabaseClient.from('site_content').update({ content_value: finalUrl }).eq('content_key', key);
+                loadSiteContent();
+            } else if (currentEditType === 'product') {
+                let updateData = {}; updateData[field] = finalUrl;
+                await supabaseClient.from('products').update(updateData).eq('id', key);
+                loadProducts();
+            }
+
+            closeModal();
+            saveBtn.innerText = 'Submit';
+            const p = document.getElementById('errorPopup'); p.style.background = '#25D366'; p.innerText = "Saved!";
+            p.classList.add('show'); setTimeout(() => { p.classList.remove('show'); p.style.background = '#ff3333'; }, 1500);
+        }
+
+        // --- CREATE NEW PRODUCT ---
+        async function createProduct() {
+            const title = document.getElementById('new-title').value;
+            const price = document.getElementById('new-price').value;
+            const desc = document.getElementById('new-desc').value;
+
+            if (!title || !price) return showError("Title and Price are required!");
+
+            const btn = document.getElementById('newSaveBtn');
+            btn.innerText = 'Creating...';
+
+            let finalImageUrl = '';
+
+            if (newSelectedFile) {
+                const fileExt = newSelectedFile.name.split('.').pop();
+                const fileName = `product_${Date.now()}.${fileExt}`; 
+                
+                const { data, error } = await supabaseClient.storage.from('images').upload(fileName, newSelectedFile);
+                if (error) {
+                    showError("Upload failed: " + error.message);
+                    btn.innerText = 'Create Product'; return;
+                }
+                const { data: urlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
+                finalImageUrl = urlData.publicUrl;
+            }
+
+            const { error } = await supabaseClient.from('products').insert([{ 
+                name: title, 
+                price: price, 
+                description: desc, 
+                image_url: finalImageUrl 
+            }]);
+
+            if (error) {
+                showError("Database Error: " + error.message);
+                btn.innerText = 'Create Product';
+            } else {
+                closeAddModal();
+                loadProducts();
+                btn.innerText = 'Create Product';
+                const p = document.getElementById('errorPopup'); p.style.background = '#25D366'; p.innerText = "Product Created!";
+                p.classList.add('show'); setTimeout(() => { p.classList.remove('show'); p.style.background = '#ff3333'; }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>

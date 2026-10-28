@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
+</head>
+<body style="background: #111; color: white; padding: 20px; font-family: sans-serif;">
+    <h1>Supabase Connection Test</h1>
+    
+    <!-- This catches any script errors and shows them to us -->
+    <script>
+        window.onerror = function(msg) {
+            alert("BIG ERROR: " + msg);
+        };
+    </script>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // 1. Check if Supabase loaded from the internet
+        if (typeof supabase === 'undefined') {
+            document.body.innerHTML += "<h3 style='color:red'>FAILED: Supabase library didn't load. Check your internet.</h3>";
+        } else {
+            document.body.innerHTML += "<h3 style='color:green'>SUCCESS: Supabase library loaded!</h3>";
+        }
+
+        // 2. Try to connect
+        try {
+            // Note: You need to paste your Anon Key here!
+            const SUPABASE_URL = 'https://ylexketpyfrlnybhuovl.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZXhrZXRweWZybG55Ymh1b3ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjczMjgsImV4cCI6MjEwODc0MzMyOH0.3eYgWOR8SZOTdGxKftBhmBPtr4jG_4xn-qyIS-F2A6g'; 
+            
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            document.body.innerHTML += "<p>Client created...</p>";
+
+            async function testDB() {
+                alert("Button clicked! Trying to reach database...");
+                const { data, error } = await client.from('products').select('*');
+                
+                if (error) {
+                    alert("DATABASE ERROR: " + error.message);
+                } else {
+                    alert("CONNECTION SUCCESSFUL! Found " + data.length + " products.");
+                }
+            }
+        } catch (e) {
+            document.body.innerHTML += "<h3 style='color:red'>CRASH: " + e.message + "</h3>";
+        }
+    </script>
+
+    <button onclick="testDB()" style="padding: 15px; font-size: 18px; margin-top: 20px; background: #ff007f; color: white; border: none; border-radius: 8px;">
+        Test Database Connection
+    </button>
+</body>
+</html>

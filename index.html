@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroTeenz | The Multi-Gifted</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-spacer"></div> 
+        <img src="scroll_image.jpg" alt="AstroTeenz" class="nav-wide-logo" id="nav-img-wide">
+        <button class="menu-btn" id="menu-btn">☰</button>
+    </nav>
+
+    <!-- Slide-out Side Menu -->
+    <div class="side-menu" id="side-menu">
+        <button class="close-btn" id="close-btn">×</button>
+        <a href="#home">Home</a>
+        <a href="#shop">Shop</a>
+        <a href="#music">Music</a>
+        <a href="#contact">Contact</a>
+    </div>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+        <div class="image-stack">
+            <!-- The hero image will now be loaded from the database -->
+            <img src="hero_image.jpg" id="dynamic-hero-img" alt="AstroTeenz Square" class="square-logo">
+        </div>
+        <h1 id="dynamic-hero-title">THE MULTI-GIFTED</h1>
+    </section>
+
+    <!-- Marquee -->
+    <div class="marquee-container">
+        <div class="marquee" id="dynamic-marquee">
+            ASTROTEENZ ✦ THE MULTI-GIFTED ✦ LIMITED DROP ✦ ASTROTEENZ ✦ THE MULTI-GIFTED ✦ LIMITED DROP ✦
+        </div>
+    </div>
+
+    <!-- Main Store Area -->
+    <main class="container" id="shop">
+        <div class="dj-link-box" id="music">
+            <p>Listen to the latest mix while you shop</p>
+            <a href="#" class="listen-btn">▶ PLAY LATEST MIX</a>
+        </div>
+
+        <!-- Products will be loaded here automatically -->
+        <div id="store-products"></div>
+
+        <!-- Contact Section -->
+        <section class="info-footer" id="contact">
+            <h2>INFO & <span class="gradient-text">CONTACT</span></h2>
+            <div class="contact-links">
+                <a href="https://wa.me/256742141276" target="_blank" class="contact-item">
+                    <span>📱</span> WhatsApp Us
+                </a>
+                <a href="mailto:booking@astroteenz.com" class="contact-item">
+                    <span>✉️</span> booking@astroteenz.com
+                </a>
+                <a href="#" target="_blank" class="contact-item">
+                    <span>📸</span> @AstroTeenz on IG
+                </a>
+            </div>
+            <p class="copyright">© 2026 AstroTeenz. <a href="admin.html" class="secret-footer-link">The Multi-Gifted.</a></p>
+        </section>
+    </main>
+
+    <!-- Floating Buttons -->
+    <a href="https://wa.me/256742141276" class="float-wa" target="_blank">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+    </a>
+    <button class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">↑</button>
+
+    <!-- SUPABASE CONNECTION -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://ylexketpyfrlnybhuovl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZXhrZXRweWZybG55Ymh1b3ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjczMjgsImV4cCI6MjEwODc0MzMyOH0.3eYgWOR8SZOTdGxKftBhmBPtr4jG_4xn-qyIS-F2A6g';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 1. Load Site Content (Hero Image, Title, Marquee)
+        async function loadSiteContent() {
+            const { data } = await supabaseClient.from('site_content').select('*');
+            if (!data) return;
+            
+            data.forEach(item => {
+                if (item.content_key === 'hero_image') document.getElementById('dynamic-hero-img').src = item.content_value;
+                if (item.content_key === 'hero_title') document.getElementById('dynamic-hero-title').innerText = item.content_value;
+                if (item.content_key === 'marquee_text') document.getElementById('dynamic-marquee').innerText = item.content_value; 
+            });
+        }
+
+        // 2. Load Products Dynamically
+        async function loadProducts() {
+            const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+            const grid = document.getElementById('store-products');
+            
+            if (!data || data.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; color:#8b8b9e;">No products available right now.</p>';
+                return;
+            }
+
+            // Generate the product cards
+            grid.innerHTML = data.map(p => `
+                <div class="product-card">
+                    <div class="image-container">
+                        <span class="badge">NEW</span>
+                        <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.name}">
+                    </div>
+                    <div class="card-content">
+                        <h2>${p.name}</h2>
+                        <p>${p.description || 'No description provided.'}</p>
+                        <div class="sizes">
+                            <span>S</span><span>M</span><span>L</span><span>XL</span>
+                        </div>
+                        <div class="price-row">
+                            <div class="price">$${p.price}</div>
+                            <button class="order-btn" data-product="${p.name} ($${p.price})">ORDER NOW</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Re-attach the WhatsApp click event to the newly created buttons
+            attachWhatsAppLogic();
+        }
+
+        // 3. WhatsApp Order Logic
+        function attachWhatsAppLogic() {
+            document.querySelectorAll('.order-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productName = button.getAttribute('data-product');
+                    const phoneNumber = "256742141276";
+                    const message = encodeURIComponent(`Hey AstroTeenz! I want to order the ${productName}. Let me know how to proceed.`);
+                    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                });
+            });
+        }
+
+        // 4. Scroll Animation Logic (From before)
+        window.addEventListener('scroll', () => {
+            const imgSquare = document.getElementById('dynamic-hero-img');
+            const navImgWide = document.getElementById('nav-img-wide');
+            const scrollY = window.scrollY;
+
+            if (scrollY <= 200) {
+                imgSquare.style.opacity = 1 - (scrollY / 200);
+            } else {
+                imgSquare.style.opacity = 0;
+            }
+
+            if (scrollY > 150) {
+                navImgWide.classList.add('visible');
+            } else {
+                navImgWide.classList.remove('visible');
+            }
+        });
+
+        // 5. Side Menu Logic
+        const menuBtn = document.getElementById('menu-btn');
+        const sideMenu = document.getElementById('side-menu');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.getElementById('menu-overlay');
+
+        function toggleMenu() {
+            sideMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        closeBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        document.querySelectorAll('.side-menu a').forEach(link => {
+            link.addEventListener('click', toggleMenu);
+        });
+
+        // Initialize everything
+        loadSiteContent();
+        loadProducts();
+    </script>
+</body>
+</html>

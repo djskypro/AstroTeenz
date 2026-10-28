@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body style="background: #111; color: white; padding: 20px;">
+    <h2>Login Test</h2>
+
+    <!-- This catches any hidden errors -->
+    <script>
+        window.onerror = function(msg) {
+            alert("JAVASCRIPT ERROR: " + msg);
+        };
+    </script>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <input type="email" id="test-email" placeholder="Email" style="padding: 10px; margin-bottom: 10px; display: block;">
+    <input type="password" id="test-pass" placeholder="Password" style="padding: 10px; margin-bottom: 10px; display: block;">
+    
+    <button onclick="alert('Button is working!')" style="padding: 10px; background: pink;">1. Click Me First</button>
+    <br><br>
+    <button onclick="runLogin()" style="padding: 10px; background: cyan;">2. Test Supabase Login</button>
+
+    <script>
+        const SUPABASE_URL = 'https://ylexketpyfrlnybhuovl.supabase.co';
+        // PASTE YOUR KEY HERE
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZXhrZXRweWZybG55Ymh1b3ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNjczMjgsImV4cCI6MjEwODc0MzMyOH0.3eYgWOR8SZOTdGxKftBhmBPtr4jG_4xn-qyIS-F2A6g'; 
+        
+        let supabaseClient = null;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {
+            alert("Failed to create client: " + e.message);
+        }
+
+        async function runLogin() {
+            if(!supabaseClient) return alert("Supabase client not created.");
+            
+            const email = document.getElementById('test-email').value;
+            const pass = document.getElementById('test-pass').value;
+            
+            if(!email || !pass) return alert("Type email and password first!");
+            
+            alert("Connecting to Supabase...");
+            
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+            
+            if (error) {
+                alert("SUPABASE REJECTED IT: " + error.message);
+            } else {
+                alert("🎉 SUCCESS! YOU ARE LOGGED IN!");
+            }
+        }
+    </script>
+</body>
+</html>
